@@ -131,7 +131,7 @@ def parse_training_log(text: str) -> dict:
             info["params"] = int(m.group(1))
         m = WD_RE.search(line)
         if m:
-            info["wd"] = {"token": m.group(1), "muon": m.group(3), "scalar": m.group(4)}
+            info["wd"] = {"token": m.group(1), "head": m.group(2), "muon": m.group(3), "scalar": m.group(4)}
     if last_step:
         info["step"] = last_step
     if last_val:
@@ -234,10 +234,9 @@ def render_status(ssh_cmd: str | None, workdir: str) -> str:
             total_cpu = sum(p["cpu"] for p in procs)
             total_rss = sum(p["rss"] for p in procs) // 1024
             max_elapsed = max(p["elapsed"] for p in procs)
-            pids = ", ".join(p["pid"] for p in procs[:4])
-            if len(procs) > 4:
-                pids += f" +{len(procs)-4}"
-            lines.append(f"  {cmd_key}: {len(procs)} ranks  {total_cpu:.0f}% CPU  {total_rss}MB RSS  {max_elapsed}s  PIDs [{pids}]")
+            all_pids = ", ".join(p["pid"] for p in procs)
+            lines.append(f"  {cmd_key}: {len(procs)} ranks  {total_cpu:.0f}% CPU  {total_rss}MB RSS  {max_elapsed}s")
+            lines.append(f"    PIDs: [{all_pids}]")
         lines.append("")
     else:
         lines.append("\033[33mNo active train_gpt.py processes\033[0m\n")
@@ -356,10 +355,10 @@ def render_status(ssh_cmd: str | None, workdir: str) -> str:
                         sz = r.get("int6_artifact_bytes")
                         color = "\033[32m" if st == "completed" else "\033[31m"
                         pre_s = f"{pre:.4f}" if pre else "N/A"
-                    i6_s = f"{i6:.4f}" if i6 else "N/A"
-                    sl_s = f"{sl:.4f}" if sl else "N/A"
-                    sz_s = format_bytes(sz) if sz else "N/A"
-                    lines.append(f"  {rid:<35} {color}{st:<12}\033[0m {pre_s:>8} {i6_s:>8} {sl_s:>8} {sz_s:>10}")
+                        i6_s = f"{i6:.4f}" if i6 else "N/A"
+                        sl_s = f"{sl:.4f}" if sl else "N/A"
+                        sz_s = format_bytes(sz) if sz else "N/A"
+                        lines.append(f"  {rid:<35} {color}{st:<12}\033[0m {pre_s:>8} {i6_s:>8} {sl_s:>8} {sz_s:>10}")
                     lines.append("")
 
     return "\n".join(lines)

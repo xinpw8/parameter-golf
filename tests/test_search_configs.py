@@ -6,7 +6,7 @@ from pathlib import Path
 from search.config import load_search_config
 
 
-ROOT = Path("/home/spark-advantage/parameter-golf")
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class SearchConfigPresetTests(unittest.TestCase):
